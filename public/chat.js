@@ -8,6 +8,14 @@ let roomInput = document.getElementById("roomName")
 let roomName = roomInput.value
 
 let creator = false
+let rtcPeerConnectionlet
+let userStream
+
+
+let iceServers = { 
+    iceServers: [{urls: "stun:stun.l.google.com:19302" }]
+}
+
 
 joinButton.addEventListener('click', () => {
 
@@ -26,6 +34,7 @@ socket.on("created", () => {
         video: { width: 500, height: 500}
     })
     .then(stream => {
+        userStream = stream
         divVideoChatLobby.style.display = "none"
         userVideo.srcObject = stream
         userVideo.onloadedmetadata = function(e) {
@@ -43,10 +52,12 @@ socket.on("joined", () => {
         video: { width: 500, height: 500}
     })
     .then(stream => {
+        userStream = stream
         divVideoChatLobby.style.display = "none"
         userVideo.srcObject = stream
         userVideo.onloadedmetadata = function(e) {
         userVideo.play()
+        socket.emit("ready", roomName)
         }
     })
     .catch(err => {
@@ -57,9 +68,33 @@ socket.on("full", () => {
     alert("Room is Full, Can't Join ")
 })
 
+socket.on("ready", () => {
+    if(creator){
+        rtcPeerConnection = RTCPeerConnection(iceServers)
+        rtcPeerConnection.onicecandidate = OnIceCandidateFunction
+        rtcPeerConnection.ontrack = OnTrackFunction
+        rtcPeerConnection.addTrack(userStream.getTracks()[0],userStream )
+        //with [1] it is video track
+        rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
 
 
-socket.on("ready", () => {})
+    }
+})
 socket.on("candidate", () => {})
 socket.on("offer", () => {})
 socket.on("answer", () => {})
+
+function OnIceCandidateFunction (event) {
+    if(event.candidate){
+        console.log('icecandicate is:', event.candidate)
+        socket.emit('candidate', event.candidate, roomName)
+    }
+}
+
+function OnTrackFunction (event) {
+    peerVideo.srcObject = event.stream[0]
+    peerVideo.onloadedmetadata = function(e) {
+    peerVideo.play()
+    }
+
+}
