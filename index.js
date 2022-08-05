@@ -15,8 +15,22 @@ io.on("connection", (socket) =>{
 
     socket.on("join", (roomName) => {
         let rooms = io.sockets.adapter.rooms
-        console.log(rooms)
         //let room = io.sockets.adapter.rooms.get(roomName)
+        let room = rooms.get(roomName)
+
+        if (room == undefined){
+            // create a room if undefined
+            socket.join(roomName)
+            console.log ("Room Created")
+        }
+        else if (room.size==1){
+            socket.join(roomName)
+            console.log("Room Joined")
+        }
+        else{
+            console.log("Room Full for Now") 
+        }
+        console.log(rooms)
 
     })
 })
