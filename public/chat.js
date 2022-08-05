@@ -1,3 +1,4 @@
+let socket = io.connect()
 let divVideoChatLobby = document.getElementById("video-chat-lobby");
 let divVideoChat = document.getElementById("video-chat-room");
 let joinButton = document.getElementById("join");
@@ -11,6 +12,7 @@ joinButton.addEventListener('click', () => {
         alert("Please enter a room name")
     }
     else{
+        socket.emit("join", roomInput.value)
         navigator.mediaDevices.getUserMedia({
             audio: false,
             video: { width: 500, height: 500}
