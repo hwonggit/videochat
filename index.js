@@ -37,16 +37,17 @@ io.on("connection", (socket) =>{
 
     socket.on("ready", (roomName) => {
         console.log("Ready")
+        console.log("Roomname: " + roomName)
         socket.broadcast.to(roomName).emit("ready")
     })
 
     socket.on("candidate", (candidate, roomName) => {
-        console.log("Candidate")
+        console.log(candidate)
         socket.broadcast.to(roomName).emit("candidate", candidate)
     })
 
     socket.on("offer", (offer, roomName) => {
-        console.log("Offer")
+        console.log(offer)
         socket.broadcast.to(roomName).emit("offer", offer)
     })
 

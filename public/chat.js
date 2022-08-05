@@ -5,7 +5,7 @@ let joinButton = document.getElementById("join")
 let userVideo = document.getElementById("user-video")
 let peerVideo = document.getElementById("peer-video")
 let roomInput = document.getElementById("roomName")
-let roomName = roomInput.value
+let roomName
 
 let creator = false
 let rtcPeerConnectionlet
@@ -23,7 +23,9 @@ joinButton.addEventListener('click', () => {
         alert("Please enter a room name")
     }
     else{
+        roomName = roomInput.value
         socket.emit("join", roomName)
+        console.log("roomName from Client: " + roomName)
     }
 })
 
@@ -69,14 +71,24 @@ socket.on("full", () => {
 })
 
 socket.on("ready", () => {
+    console.log("Ready received by client")
+    console.log("creator = " + creator)
     if(creator){
-        rtcPeerConnection = RTCPeerConnection(iceServers)
+        rtcPeerConnection = new RTCPeerConnection(iceServers)
+        console.log(rtcPeerConnection)
         rtcPeerConnection.onicecandidate = OnIceCandidateFunction
         rtcPeerConnection.ontrack = OnTrackFunction
         rtcPeerConnection.addTrack(userStream.getTracks()[0],userStream )
         //with [1] it is video track
-        rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
-
+        //rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
+        rtcPeerConnection.createOffer()
+            .then ((offer) => {
+                rtcPeerConnection.setLocalDescription(offer)
+                socket.emit('offer', offer, roomName)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
 
     }
 })
