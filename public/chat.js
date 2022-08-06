@@ -5,8 +5,16 @@ let joinButton = document.getElementById("join")
 let userVideo = document.getElementById("user-video")
 let peerVideo = document.getElementById("peer-video")
 let roomInput = document.getElementById("roomName")
-let roomName
 
+let divButtonGroup = document.getElementById("btn-group")
+let muteButton = document.getElementById("muteButton")
+let hideCameraButton = document.getElementById("hideCameraButton")
+let leaveRoomButton = document.getElementById("leaveRoomButton")
+
+let muteFlag = false
+let hideCameraFlag = false
+
+let roomName
 let creator = false
 let rtcPeerConnectionlet
 let userStream
@@ -29,6 +37,26 @@ joinButton.addEventListener('click', () => {
     }
 })
 
+muteButton.addEventListener('click', () => {
+    muteFlag = !muteFlag
+    if(muteFlag){
+        muteButton.textContent = "Unmute"
+    }
+    else{
+        muteButton.textContent = "Mute"
+    }
+})
+
+hideCameraButton.addEventListener('click', () => {
+    hideCameraFlag = !hideCameraFlag
+    if(hideCameraFlag){
+        hideCameraButton.textContent = "Show Camera"
+    }
+    else{
+        hideCameraButton.textContent = "Hide Camera"
+    }
+})
+
 socket.on("created", () => {
     creator = true
     navigator.mediaDevices.getUserMedia({
@@ -38,6 +66,7 @@ socket.on("created", () => {
     .then(stream => {
         userStream = stream
         divVideoChatLobby.style.display = "none"
+        divButtonGroup.style = "display:flex"
         userVideo.srcObject = stream
         userVideo.onloadedmetadata = function(e) {
         userVideo.play()
@@ -56,6 +85,7 @@ socket.on("joined", () => {
     .then(stream => {
         userStream = stream
         divVideoChatLobby.style.display = "none"
+        divButtonGroup.style = "display:flex"
         userVideo.srcObject = stream
         userVideo.onloadedmetadata = function(e) {
         userVideo.play()
