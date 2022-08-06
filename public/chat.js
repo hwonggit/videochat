@@ -16,7 +16,7 @@ let hideCameraFlag = false
 
 let roomName
 let creator = false
-let rtcPeerConnectionlet
+let rtcPeerConnection
 let userStream
 
 
@@ -26,13 +26,14 @@ let iceServers = {
 
 
 joinButton.addEventListener('click', () => {
-
-    if(roomInput.value==""){
+    if(roomInput.value ==""){
         alert("Please enter a room name")
     }
     else{
         roomName = roomInput.value
         socket.emit("join", roomName)
+        //alert(socket.connected)
+
         console.log("roomName from Client: " + roomName)
     }
 })
@@ -57,10 +58,10 @@ hideCameraButton.addEventListener('click', () => {
     }
 })
 
-socket.on("created", () => {
+socket.on('created', () => {
     creator = true
     navigator.mediaDevices.getUserMedia({
-        audio: false,
+        audio: true,
         video: { width: 500, height: 500}
     })
     .then(stream => {
@@ -76,10 +77,10 @@ socket.on("created", () => {
         alert('Could not access user media')
     })
 })
-socket.on("joined", () => {
+socket.on('joined', () => {
     creator = false
     navigator.mediaDevices.getUserMedia({
-        audio: false,
+        audio: true,
         video: { width: 500, height: 500}
     })
     .then(stream => {
@@ -89,26 +90,26 @@ socket.on("joined", () => {
         userVideo.srcObject = stream
         userVideo.onloadedmetadata = function(e) {
         userVideo.play()
-        socket.emit("ready", roomName)
         }
+        socket.emit('ready', roomName)
     })
     .catch(err => {
         alert('Could not access user media')
     })
 })
-socket.on("full", () => {
+socket.on('full', () => {
     alert("Room is Full, Can't Join ")
 })
 
-socket.on("ready", () => {
+socket.on('ready', () => {
     if(creator){
         rtcPeerConnection = new RTCPeerConnection(iceServers)
-        console.log(rtcPeerConnection)
+        console.log("on ready",rtcPeerConnection)
         rtcPeerConnection.onicecandidate = OnIceCandidateFunction
         rtcPeerConnection.ontrack = OnTrackFunction
         rtcPeerConnection.addTrack(userStream.getTracks()[0],userStream )
         //with [1] it is video track
-        //rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
+        rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
         rtcPeerConnection.createOffer()
             .then ((offer) => {
                 rtcPeerConnection.setLocalDescription(offer)
@@ -120,19 +121,19 @@ socket.on("ready", () => {
 
     }
 })
-socket.on("candidate", (candidate) => {
+socket.on('candidate', (candidate) => {
     let icecandidate = new RTCIceCandidate(candidate)
     rtcPeerConnection.addIceCandidate(icecandidate)
 })
-socket.on("offer", (offer) => {
+socket.on('offer', (offer) => {
     if(!creator){
         rtcPeerConnection = new RTCPeerConnection(iceServers)
-        console.log(rtcPeerConnection)
+        console.log("on offer",rtcPeerConnection)
         rtcPeerConnection.onicecandidate = OnIceCandidateFunction
         rtcPeerConnection.ontrack = OnTrackFunction
         rtcPeerConnection.addTrack(userStream.getTracks()[0],userStream )
         //with [1] it is video track
-        //rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
+        rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
         rtcPeerConnection.setRemoteDescription(offer)
         rtcPeerConnection.createAnswer()
             .then ((answer) => {
@@ -146,16 +147,16 @@ socket.on("offer", (offer) => {
     }
 
 })
-socket.on("answer", (answer) => {
+socket.on('answer', (answer) => {
     rtcPeerConnection.setRemoteDescription(answer)
 })
 
 function OnIceCandidateFunction (event) {
     if(event.candidate){
-        icecandidate_g = event.candidate
-        console.log("icecandidate_g =" + icecandidate_g)
-        console.log("icecandidate_g =", icecandidate_g)
-        console.log('icecandicate is:', event.candidate)
+        // icecandidate_g = event.candidate
+        // console.log("icecandidate_g =" + icecandidate_g)
+        // console.log("icecandidate_g =", icecandidate_g)
+        // console.log('icecandicate is:', event.candidate)
         socket.emit('candidate', event.candidate, roomName)
     }
 }
