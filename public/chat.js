@@ -90,7 +90,10 @@ socket.on("ready", () => {
 
     }
 })
-socket.on("candidate", () => {})
+socket.on("candidate", (candidate) => {
+    let icecandidate = new RTCIceCandidate(candidate)
+    rtcPeerConnection.addIceCandidate(icecandidate)
+})
 socket.on("offer", (offer) => {
     if(!creator){
         rtcPeerConnection = new RTCPeerConnection(iceServers)
@@ -119,13 +122,16 @@ socket.on("answer", (answer) => {
 
 function OnIceCandidateFunction (event) {
     if(event.candidate){
+        icecandidate_g = event.candidate
+        console.log("icecandidate_g =" + icecandidate_g)
+        console.log("icecandidate_g =", icecandidate_g)
         console.log('icecandicate is:', event.candidate)
         socket.emit('candidate', event.candidate, roomName)
     }
 }
 
 function OnTrackFunction (event) {
-    peerVideo.srcObject = event.stream[0]
+    peerVideo.srcObject = event.streams[0]
     peerVideo.onloadedmetadata = function(e) {
     peerVideo.play()
     }
