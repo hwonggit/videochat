@@ -71,8 +71,6 @@ socket.on("full", () => {
 })
 
 socket.on("ready", () => {
-    console.log("Ready received by client")
-    console.log("creator = " + creator)
     if(creator){
         rtcPeerConnection = new RTCPeerConnection(iceServers)
         console.log(rtcPeerConnection)
@@ -93,8 +91,31 @@ socket.on("ready", () => {
     }
 })
 socket.on("candidate", () => {})
-socket.on("offer", () => {})
-socket.on("answer", () => {})
+socket.on("offer", (offer) => {
+    if(!creator){
+        rtcPeerConnection = new RTCPeerConnection(iceServers)
+        console.log(rtcPeerConnection)
+        rtcPeerConnection.onicecandidate = OnIceCandidateFunction
+        rtcPeerConnection.ontrack = OnTrackFunction
+        rtcPeerConnection.addTrack(userStream.getTracks()[0],userStream )
+        //with [1] it is video track
+        //rtcPeerConnection.addTrack(userStream.getTracks()[1],userStream )
+        rtcPeerConnection.setRemoteDescription(offer)
+        rtcPeerConnection.createAnswer()
+            .then ((answer) => {
+                rtcPeerConnection.setLocalDescription(answer)
+                socket.emit('answer', answer, roomName)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+
+    }
+
+})
+socket.on("answer", (answer) => {
+    rtcPeerConnection.setRemoteDescription(answer)
+})
 
 function OnIceCandidateFunction (event) {
     if(event.candidate){
