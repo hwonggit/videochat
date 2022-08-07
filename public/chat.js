@@ -182,6 +182,7 @@ leaveRoomButton.addEventListener('click', () => {
 })
 
 socket.on("leave", () => {
+    creator = true // This person is now the creator as he is the only person in the room.
     if(rtcPeerConnection){
         rtcPeerConnection.ontrack = null
         rtcPeerConnection.onicecandidate = null
