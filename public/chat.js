@@ -38,6 +38,8 @@ joinButton.addEventListener('click', () => {
     }
 })
 
+
+
 muteButton.addEventListener('click', () => {
     muteFlag = !muteFlag
     if(muteFlag){
@@ -153,6 +155,44 @@ socket.on('offer', (offer) => {
 })
 socket.on('answer', (answer) => {
     rtcPeerConnection.setRemoteDescription(answer)
+})
+
+leaveRoomButton.addEventListener('click', () => {
+    socket.emit("leave", roomName)
+    divVideoChatLobby.style = "display:block"
+    divButtonGroup.style = "display:none"
+    // need to get rid of user video and peer video
+    if(userVideo.srcObject){
+        userVideo.srcObject.getTracks()[0].stop() //stop audio track
+        userVideo.srcObject.getTracks()[1].stop() //stop video track
+    }
+
+    if(peerVideo.srcObject){
+        peerVideo.srcObject.getTracks()[0].stop() 
+        peerVideo.srcObject.getTracks()[1].stop()
+    }
+
+    //close connection to the other peer
+    if(rtcPeerConnection){
+        rtcPeerConnection.ontrack = null
+        rtcPeerConnection.onicecandidate = null
+        rtcPeerConnection.close()
+        rtcPeerConnection = null
+    }
+})
+
+socket.on("leave", () => {
+    if(rtcPeerConnection){
+        rtcPeerConnection.ontrack = null
+        rtcPeerConnection.onicecandidate = null
+        rtcPeerConnection.close()
+        rtcPeerConnection = null
+    }
+
+    if(peerVideo.srcObject){
+        peerVideo.srcObject.getTracks()[0].stop() 
+        peerVideo.srcObject.getTracks()[1].stop()
+    }
 })
 
 function OnIceCandidateFunction (event) {
