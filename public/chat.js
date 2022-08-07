@@ -41,9 +41,11 @@ joinButton.addEventListener('click', () => {
 muteButton.addEventListener('click', () => {
     muteFlag = !muteFlag
     if(muteFlag){
+        userStream.getTracks()[0].enabled = false
         muteButton.textContent = "Unmute"
     }
     else{
+        userStream.getTracks()[0].enabled = true
         muteButton.textContent = "Mute"
     }
 })
@@ -51,9 +53,11 @@ muteButton.addEventListener('click', () => {
 hideCameraButton.addEventListener('click', () => {
     hideCameraFlag = !hideCameraFlag
     if(hideCameraFlag){
+        userStream.getTracks()[1].enabled = false
         hideCameraButton.textContent = "Show Camera"
     }
     else{
+        userStream.getTracks()[1].enabled = true
         hideCameraButton.textContent = "Hide Camera"
     }
 })
