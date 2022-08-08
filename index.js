@@ -1,14 +1,37 @@
+const https = require("https")
+const fs = require ("fs") 
+
 const express = require("express")
 const socket = require("socket.io")
 const app = express()
 
-let server = app.listen(4000, () =>{
+const path = require("path");
+//const file = fs.readFileSync(path.resolve(__dirname, "../file.xml"));
+
+const options = {
+    key: fs.readFileSync("./certificates/192.168.1.104-key.pem"),
+    cert: fs.readFileSync("./certificates/192.168.1.104.pem")
+}
+console.log("options: ", options)
+
+
+
+let httpServer = app.listen(4002, () =>{
     console.log("server is running")
 })
 
+
+let httpsServer = https
+    .createServer(options, app)
+    .listen(4000, () => {
+        console.log("server is running at port 4000")
+    })
+
+
+
 app.use(express.static("public"))
 
-let io = socket(server)
+let io = socket(httpsServer)
 
 io.on("connection", (socket) =>{
     console.log("User connected:" + socket.id)
